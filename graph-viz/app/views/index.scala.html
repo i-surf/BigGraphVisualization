@@ -35,34 +35,22 @@
                     <!-- 인풋 박스 = query -->
                 <input type="text" class="div" id="query"
                 placeholder="Search number of nodes, range from 1-10000, e.g.500. The default value is 5.">
-                <button onclick="drawGraph()">submit</button>
+                <button onclick="requestHttp()">submit</button>
             </div>
         </body>
 
-
         <script src="/assets/javascripts/sigma.min.js"></script>
-
 
         <script src="/assets/javascripts/deckgl.min.js"></script>
         <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.50.0/mapbox-gl.js'></script>
         <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.50.0/mapbox-gl.css' rel='stylesheet' />
 
         <script>
-                /* mapboxgl.accessToken = 'pk.eyJ1IjoiamVyZW15bGkiLCJhIjoiY2lrZ2U4MWI4MDA4bHVjajc1am1weTM2aSJ9.JHiBmawEKGsn3jiRK_d0Gw';
-                 const map = new mapboxgl.Map({
-                     container: 'map',
-                     style: 'mapbox://styles/mapbox/light-v9',
-                     center: [-96.35,39.5],
-                     zoom: 3.7
-                 });
-                */
 
-                function drawGraph(){
-                    /*      if(map.getLayer('arc')!=undefined){
-                            map.removeLayer('arc')
-                        }
-                     */
+                title_list  =[]
+                to_list=[]
 
+                function requestHttp(){
                     query = document.getElementById("query").value;
                     console.log("query는 : " + query);
 
@@ -70,146 +58,162 @@
                     // request.open('GET', 'http://localhost:9000/replies?query='+query, false);//for async
                     request.open('GET', 'http://localhost:9000/test2?query='+query, false);
                     request.send(null);
+
                     if (request.status === 200) {
 
-                        /*
-                        이게 아니고
-                        id = [1111, 2222, 3333, 4444]
-                        title = [Korea, Hanbok, Hangul, Jeju]
-                        to_list = [ [2222, 3333, 4444], [5555, 6666], [7777], [8888,9999,2323,2424] ]
-                        */
+                        var data = JSON.parse(request.responseText); //함수에서 받은 request 결과
+                        var title_list_ = data.title_list;
+                        var title_list_len = title_list_.length;
+                        //console.log("길이는 "+title_list_len);
 
-                        /*
-                        이미 title에 Korea가 있는거 빼고, content에 Korea가 있는 것만 리스트들로 넘겨줄것임
-                        일단 첫번째 그래프를 그리고, subgraph는 그 후에 생각하기로 함
-                        */
+                        title_list_= title_list_.substring(1, title_list_len-1);
+                        title_list = title_list_.split(',');
+                        //console.log("title_list : " + title_list);
 
-                        id_list = [2222, 3333, 4444]
-                        title_list = ['Hanbok', 'Hangul', 'Jeju']
-                        to_list = [ ['Jeju'], ['Haha', 'Happy'], ['help', 'me'] ]
+                        //to_list
+                        var to_list_ = data.to_list; // [ㅁ,ㅁ],,[ㅁ],,[ㅁ,ㅁ,ㅁ],,
+                        var list_list = to_list_.split(",,"); //list를 담은 list
 
-                        var cnt = id_list.length;
-                        console.log('len')
-                        console.log(cnt)
+                        // list_list to a real double_list
+                        for(var i=0; i<list_list.length; i++){
+                            var list = list_list[i];
+                            list = list.substring(1, list.length-1);
+                            tmp_list = list.split(','); //string to list
+                            to_list.push(tmp_list);
+                        }
+                    }
+                    else{
+                        console.log("response error");
+                    }
 
-                        global_edges = 0
-
-                        /*
-                        추가할기능
-                        (1) 데이터 많아지면 노드 커지게
-                        (2) 노드위에 마우스 올리거나 클릭하면 text보이게 or 클릭하면 해당 링크로 이동
-                        (3) cycle을 형성하면 direct로 바꾸게 - 2개일 때만 해당
-                        (4) label을 노드 점 대신에 하면, edge가 label가리는 일 없을듯
-                        (5) 중복 생기면 (search 같은 키워드로 계속 누를때) 노드/에지 없어지고 레이블만 남는 문제
-                        (6) 주석 ///////////////////// 부분 : to_list 집합에 같은 타이틀이 있으면 중복 id라고 할듯
-                            -> title로 node를 만드는데, 중복관련 문제가 생기는 것 아닌지 생각해보기
-                         */
-
-                        //console.log(1);
-
-                        //var s = new sigma('container'); //그래프 그리기 시작
-                        var g = {
-                            nodes: [],
-                            edges: []
-                        };
+                    console.log("finish finish finish ");
+                }
 
 
-                        //node
-                        for (var idx=0; idx<cnt; idx++){
-                            g.nodes.push({
-                                //s.graph.addNode({
-                                id : 'n' + id_list[idx],
-                                label : title_list[idx],
-                                x : Math.random(),
-                                y : Math.random(),
-                                size : 1,
-                                color : '#f00'
-                            });
-                            console.log('n'+id_list[idx])
 
-                            for(var k=0; k<to_list[idx].length; k++){
+                function drawGraph(){
+                    /*
+                    이미 title에 Korea가 있는거 빼고, content에 Korea가 있는 것만 리스트들로 넘겨줄것임
+                    일단 첫번째 그래프를 그리고, 노드를 클릭하면 재쿼리 날람
+                    */
+
+                    /*
+                    추가할기능
+                    (1) 데이터 많아지면 노드 커지게
+                    (2) 노드위에 마우스 올리거나 클릭하면 text보이게 or 클릭하면 해당 링크로 이동
+                    (3) cycle을 형성하면 direct로 바꾸게 - 2개일 때만 해당
+                    (4) label을 노드 점 대신에 하면, edge가 label가리는 일 없을듯
+                    (5) 중복 생기면 (search 같은 키워드로 계속 누를때) 노드/에지 없어지고 레이블만 남는 문제
+                    (6) 주석 ///////////////////// 부분 : to_list 집합에 같은 타이틀이 있으면 중복 id라고 할듯
+                        -> title로 node를 만드는데, 중복관련 문제가 생기는 것 아닌지 생각해보기
+                     */
+
+                    //var s = new sigma('container'); //그래프 그리기 시작
+                    var g = {
+                        nodes: [],
+                        edges: []
+                    };
+
+                    var title_list_cnt = title_list.length;
+                    console.log('title_list_cnt : '+ title_list_cnt);
+
+                    global_edges = 0
+
+                    //node
+                    for (var idx=0; idx<title_list_cnt; idx++) {
+                        g.nodes.push({
+                            //s.graph.addNode({
+                            id: title_list[idx],
+                            label: title_list[idx],
+                            x: Math.random(),
+                            y: Math.random(),
+                            size: 1,
+                            color: '#f00'
+                        });
+                    }
+
+                    console.log("///debug///")
+                    console.log(title_list);
+                    console.log(g.nodes);
+                    console.log(g.nodes[0]);
+                    console.log("///debug///");
+
+                    //에지연결
+                    for (var i=0; i<title_list_cnt; i++){
+                        for (var j=0; j<to_list[i].length; j++){
+                            console.log(title_list[i] +" 에서부터" + to_list[i][j]+ "까지");
+
+                            if(g.nodes.includes(to_list[i][j])){ //연결하려는 노드가 존재하지 않으면
+
+                                console.log("Case (1) not exist nodes ");
+
+                                //그 노드를 새로 만들고
                                 g.nodes.push({
-                                    /////////////////////
                                     //s.graph.addNode({
-                                    id : 'title' + to_list[idx][k],
-                                    label : to_list[idx][k],
-                                    x : Math.random(),
-                                    y : Math.random(),
-                                    size : 1,
-                                    color : '#f00'
+                                    id: to_list[i][j],
+                                    label: to_list[i][j],
+                                    x: Math.random(),
+                                    y: Math.random(),
+                                    size: 1,
+                                    color: '#f00'
                                 });
 
-                                console.log('title'+to_list[idx][k])
-                            }
-
-                        }
-
-
-                        //console.log(2);
-                        //
-
-
-                        for (var i=0; i<cnt; i++){
-                            for (var j=0; j<to_list[i].length; j++){
+                                //에지로 연결
                                 g.edges.push({
                                     id : global_edges,
-                                    source: 'n' + id_list[i],
-                                    target: 'title' + to_list[i][j],
+                                    source: title_list[i],
+                                    target: to_list[i][j],
                                     size: 3,
                                     color: '#00f',
                                     type:'arrow'
                                 });
-
-                                global_edges += 1;
                             }
+
+                            else{
+                                console.log("Case (2) exist nodes ");
+                                //원래 존재하는 에지라면
+                                g.edges.push({
+                                    id : global_edges,
+                                    source: title_list[i],
+                                    target: to_list[i][j],
+                                    size: 3,
+                                    color: '#00f',
+                                    type:'arrow'
+                                });
+                            }
+
+                            global_edges += 1;
                         }
-
-
-                        console.log(g);
-                        console.log(g.nodes);
-                        console.log(g.edges);
-                       // console.log(3);
-                        //
-                        //
-                        // g.edges.push({
-                        // //g.graph.addEdge({
-                        //     id : 3,
-                        //     // Reference extremities:
-                        //     source: 'n'+1,
-                        //     target: 2,
-                        //     size: 3,
-                        //     color: '#00f',
-                        //     type:'arrow'
-                        //
-                        // });
-                        //
-
-
-                        var s = new sigma({
-                            graph: g,
-                            container: 'graph-container',
-                            renderer: {
-                                container: document.getElementById('graph-container'),
-                                type: 'WebGL',
-                            },
-                            settings: { //nodeSize는 데이터 수에 따라 굵어지게 바꾸기
-                                minNodeSize: 9, //node label 없어지니까 9이상
-                                maxNodeSize: 9, //node label 없어지니까 9이상
-                                maxEdgeSize: 4, //3 or 4
-                                doubleClickEnabled: false,
-                                arrowSizeRatio: 2, //일단 1로 설정
-                                // 같은 그래프들이 원의 중심을 기준으로 형성되는데
-                                //얼마나 멀리 퍼질것이냐를 의미하는 듯
-                                //30 했더니 브라우저 밖으로 뚫고 나감, 1로 하면 창안에서 매우 다양
-                            }
-                        });
-                        s.refresh();
                     }
-                }
 
+                    //debug
+                    console.log(g);
+                    console.log(g.nodes);
+                    console.log(g.edges);
+
+                    var s = new sigma({
+                        graph: g,
+                        container: 'graph-container',
+                        renderer: {
+                            container: document.getElementById('graph-container'),
+                            type: 'WebGL',
+                        },
+                        settings: { //nodeSize는 데이터 수에 따라 굵어지게 바꾸기
+                            minNodeSize: 9, //node label 없어지니까 9이상
+                            maxNodeSize: 9, //node label 없어지니까 9이상
+                            maxEdgeSize: 4, //3 or 4
+                            doubleClickEnabled: false,
+                            arrowSizeRatio: 2, //일단 1로 설정
+                            // 같은 그래프들이 원의 중심을 기준으로 형성되는데
+                            //얼마나 멀리 퍼질것이냐를 의미하는 듯
+                            //30 했더니 브라우저 밖으로 뚫고 나감, 1로 하면 창안에서 매우 다양
+                        }
+                    });
+                    s.refresh();
+                }
         </script>
 
     </html>
-        }}}}
+        }}}
 
 
