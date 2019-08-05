@@ -1,6 +1,5 @@
 @()
 
-
 @defining(play.core.PlayVersion.current) { version =>
 
     <html>
@@ -32,7 +31,7 @@
             <div id = "search">
                 <p id="content">Reply Tweets Dataset</p>
 
-                    <!-- 인풋 박스 = query -->
+                <<!-- input box -> query -->
                 <input type="text" class="div" id="query"
                 placeholder="Search number of nodes, range from 1-10000, e.g.500. The default value is 5.">
                 <button onclick="requestHttp()">submit</button>
@@ -46,68 +45,47 @@
         <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.50.0/mapbox-gl.css' rel='stylesheet' />
 
         <script>
-
                 title_list  =[]
                 to_list=[]
 
-                function requestHttp(){
+                global_nodes_title = [] // store ids(titles) of added nodes
+                //var global_edges = []
+
+                function requestHttp() {
                     query = document.getElementById("query").value;
-                    console.log("query는 : " + query);
+                    console.log("query = " + query);
 
                     var request = new XMLHttpRequest();
-                    // request.open('GET', 'http://localhost:9000/replies?query='+query, false);//for async
-                    request.open('GET', 'http://localhost:9000/test2?query='+query, false);
+                    request.open('GET', 'http://localhost:9000/test2?query=' + query, false);
                     request.send(null);
 
                     if (request.status === 200) {
-
-                        var data = JSON.parse(request.responseText); //함수에서 받은 request 결과
+                        var data = JSON.parse(request.responseText); // a result of request
                         var title_list_ = data.title_list;
                         var title_list_len = title_list_.length;
-                        //console.log("길이는 "+title_list_len);
 
-                        title_list_= title_list_.substring(1, title_list_len-1);
+                        title_list_ = title_list_.substring(1, title_list_len - 1);
                         title_list = title_list_.split(',');
-                        //console.log("title_list : " + title_list);
 
                         //to_list
                         var to_list_ = data.to_list; // [ㅁ,ㅁ],,[ㅁ],,[ㅁ,ㅁ,ㅁ],,
-                        var list_list = to_list_.split(",,"); //list를 담은 list
+                        var list_list = to_list_.split(",,"); // a list which contains lists
 
                         // list_list to a real double_list
-                        for(var i=0; i<list_list.length; i++){
+                        for (var i = 0; i < list_list.length; i++) {
                             var list = list_list[i];
-                            list = list.substring(1, list.length-1);
+                            list = list.substring(1, list.length - 1);
                             tmp_list = list.split(','); //string to list
                             to_list.push(tmp_list);
                         }
-                    }
-                    else{
+
+                        drawGraph();
+                    } else {
                         console.log("response error");
                     }
-
-                    console.log("finish finish finish ");
                 }
 
-
-
                 function drawGraph(){
-                    /*
-                    이미 title에 Korea가 있는거 빼고, content에 Korea가 있는 것만 리스트들로 넘겨줄것임
-                    일단 첫번째 그래프를 그리고, 노드를 클릭하면 재쿼리 날람
-                    */
-
-                    /*
-                    추가할기능
-                    (1) 데이터 많아지면 노드 커지게
-                    (2) 노드위에 마우스 올리거나 클릭하면 text보이게 or 클릭하면 해당 링크로 이동
-                    (3) cycle을 형성하면 direct로 바꾸게 - 2개일 때만 해당
-                    (4) label을 노드 점 대신에 하면, edge가 label가리는 일 없을듯
-                    (5) 중복 생기면 (search 같은 키워드로 계속 누를때) 노드/에지 없어지고 레이블만 남는 문제
-                    (6) 주석 ///////////////////// 부분 : to_list 집합에 같은 타이틀이 있으면 중복 id라고 할듯
-                        -> title로 node를 만드는데, 중복관련 문제가 생기는 것 아닌지 생각해보기
-                     */
-
                     //var s = new sigma('container'); //그래프 그리기 시작
                     var g = {
                         nodes: [],
@@ -115,11 +93,9 @@
                     };
 
                     var title_list_cnt = title_list.length;
-                    console.log('title_list_cnt : '+ title_list_cnt);
-
                     global_edges = 0
 
-                    //node
+                    //push a node to a graph object
                     for (var idx=0; idx<title_list_cnt; idx++) {
                         g.nodes.push({
                             //s.graph.addNode({
@@ -130,24 +106,15 @@
                             size: 1,
                             color: '#f00'
                         });
+
+                        global_nodes_title.push(title_list[idx]);
                     }
 
-                    console.log("///debug///")
-                    console.log(title_list);
-                    console.log(g.nodes);
-                    console.log(g.nodes[0]);
-                    console.log("///debug///");
-
-                    //에지연결
+                    // connect edges
                     for (var i=0; i<title_list_cnt; i++){
                         for (var j=0; j<to_list[i].length; j++){
-                            console.log(title_list[i] +" 에서부터" + to_list[i][j]+ "까지");
-
-                            if(g.nodes.includes(to_list[i][j])){ //연결하려는 노드가 존재하지 않으면
-
-                                console.log("Case (1) not exist nodes ");
-
-                                //그 노드를 새로 만들고
+                            if(global_nodes_title.includes(to_list[i][j])===false){
+                                // first, make a node
                                 g.nodes.push({
                                     //s.graph.addNode({
                                     id: to_list[i][j],
@@ -158,7 +125,10 @@
                                     color: '#f00'
                                 });
 
-                                //에지로 연결
+                                // mark that node is made
+                                global_nodes_title.push(to_list[i][j]);
+
+                                //connect edges
                                 g.edges.push({
                                     id : global_edges,
                                     source: title_list[i],
@@ -169,9 +139,8 @@
                                 });
                             }
 
+                            // if it is an exist node
                             else{
-                                console.log("Case (2) exist nodes ");
-                                //원래 존재하는 에지라면
                                 g.edges.push({
                                     id : global_edges,
                                     source: title_list[i],
@@ -186,11 +155,6 @@
                         }
                     }
 
-                    //debug
-                    console.log(g);
-                    console.log(g.nodes);
-                    console.log(g.edges);
-
                     var s = new sigma({
                         graph: g,
                         container: 'graph-container',
@@ -198,22 +162,24 @@
                             container: document.getElementById('graph-container'),
                             type: 'WebGL',
                         },
-                        settings: { //nodeSize는 데이터 수에 따라 굵어지게 바꾸기
-                            minNodeSize: 9, //node label 없어지니까 9이상
-                            maxNodeSize: 9, //node label 없어지니까 9이상
-                            maxEdgeSize: 4, //3 or 4
+                        settings: { // change the size of the node depending on the number of data
+                            minNodeSize: 8, // node label is shown if it is bigger than 7
+                            maxNodeSize: 8, // node label is shown if it is bigger than 7
+                            maxEdgeSize: 1, // 3 or 4
                             doubleClickEnabled: false,
-                            arrowSizeRatio: 2, //일단 1로 설정
-                            // 같은 그래프들이 원의 중심을 기준으로 형성되는데
-                            //얼마나 멀리 퍼질것이냐를 의미하는 듯
-                            //30 했더니 브라우저 밖으로 뚫고 나감, 1로 하면 창안에서 매우 다양
+                            arrowSizeRatio: 2.2,
+                            /*
+                               each graph is formed based on center of circle
+                               It seems to mean the degree of spreadability
+                               If I set as 30, it goes out of the screen.
+                               1 maybe vary.
+                            */
                         }
                     });
                     s.refresh();
                 }
         </script>
-
     </html>
-        }}}
+}}}
 
 
