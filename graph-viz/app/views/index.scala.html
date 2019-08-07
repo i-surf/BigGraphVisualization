@@ -236,11 +236,26 @@
                     // draw the graph
                     s.refresh();
 
-                    // launch force-atlas
-                    s.startForceAtlas2();
+                    // launch force-atlas with parameters
+                    // https://github.com/jacomyal/sigma.js/tree/master/plugins/sigma.layout.forceAtlas2
+                    s.startForceAtlas2({
+                        linLogMode : true, //clusters more tight.
+                        //outboundAttractionDistribution : true,
+                        //adjustSizes : true,
+                        //edgeWeightInfluence : 1, //0 = no influence, 1 = normal
+                        scalingRatio : 1, //how much repulsion you want. More makes a more sparse graph.
+                        strongGravityMode : false,
+                        //gravity : 1, //attracts nodes to the center. Prevents islands from drifting away.
+                        barnesHutOptimize: true, //to improve repulsion's scalability, useful for large graph but harmful to small ones.
+                        barnesHutTheta : 1,
+                        slowDown : 1,
+                        //startingIterations : 1, //number of iterations to be run before the first render.
+                        //iterationsPerRender : 2, //number of iterations to be run before each render.
+                        worker: true //?
+                    });
 
                     // can control the duration of an effect
-                    window.setTimeout(function() {s.killForceAtlas2()}, 1000);
+                    window.setTimeout(function() {s.killForceAtlas2()}, 10000);
                 }
         </script>
     </html>
