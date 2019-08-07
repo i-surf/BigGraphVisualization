@@ -239,9 +239,13 @@
 
                     // Configure the noverlap layout:
                     var noverlapListener = s.configNoverlap({
-                        nodeMargin: 0.1,
-                        scaleNodes: 1.05,
-                        gridSize: 75,
+                        nodeMargin: 0.5, // the additional minimum space to apply around each and every node.
+                        scaleNodes: 1.2, // larger nodes have more space around them if this multiplier > 0.
+                        gridSize: 40, // The number of rows and columns to use when dividing the nodes up into cells which the algorithm is applied to. Use more rows and columns for larger graphs for a more efficient algorithm.
+                        permittedExpansion : 1.1, // the maximum ratio to apply to the bounding box, i.e. the maximum by which the network is permitted to expand.
+                        rendererIndex : 0, // The index of the renderer to use to compute overlap and collisions of the nodes.
+                        speed : 2, // A larger value increases the speed with which the algorithm will convergence at the cost of precision.
+                        maxIterations : 50, // The maximum number of iterations to run the algorithm for before stopping it.
                         easing: 'quadraticInOut', // animation transition function
                         duration: 5000   // animation duration. Long here for the purposes of this example only
                     });
