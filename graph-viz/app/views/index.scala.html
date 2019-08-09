@@ -17,12 +17,77 @@
                 }
                 #search{
                     left:500px;
-                    top:0px;
+                    top:50px;
                     position:absolute;
                 }
+
+                .dropdown {
+                    position: relative;
+                    display: inline-block;
+                    left : 100px;
+                    top : 70px;
+                }
+
+                .dropbtn {
+                    background-color: #4CAF50;
+                    color: white;
+                    padding: 16px;
+                    font-size: 16px;
+                    border: none;
+                    width : 120px;
+                }
+
+                .dropdown-content {
+                    display: none;
+                    position: absolute;
+                    background-color: #f1f1f1;
+                    min-width: 160px;
+                    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+                    z-index: 1;
+                }
+
+                .dropdown-content a {
+                    color: black;
+                    padding: 12px 16px;
+                    text-decoration: none;
+                    display: block;
+                }
+
+                .dropdown-content a:hover {background-color: #ddd;}
+
+                .dropdown:hover .dropdown-content {display: block;}
+
+                .dropdown:hover .dropbtn {background-color: #3e8e41;}
+
         </style>
 
         <body>
+@*            html hover dropdown*@
+            <div class="dropdown">
+                <button class="dropbtn">LAYOUT</button>
+                <div class="dropdown-content">
+                    <a id=ForceAtlas2 href="#">ForceAtlas2</a>
+                    <a id=Noverlap href="#">Noverlap</a>
+                </div>
+            </div>
+
+<!--
+           <div class = "dropdown">
+                <button class="dropbtn"> LAYOUT </button>
+                <div class="dropdown-content">
+                    <button id="ForceAtlas2">ForceAtlas2</button>
+                    <button id="Noverlap">Noverlap</button>
+                </div>
+            </div>
+
+            <div class = "dropDownDiv">
+                <button onclick="show_hide()" class="dropDownButton"> LAYOUT </button>
+               <div style="display:none;" id="drop-content">
+                    <button id="ForceAtlas2">ForceAtlas2</button>
+                    <button id="Noverlap">Noverlap</button>
+                </div>
+            </div>
+-->
 
             <div id="graph-container" style="width: 1000px; height: 800px;">
             </div>
@@ -31,9 +96,9 @@
             <div id = "search">
                 <p id="content">Reply Tweets Dataset</p>
 
-                <<!-- input box -> query -->
+                <!-- input box -> query -->
                 <input type="text" class="div" id="query"
-                placeholder="Search number of nodes, range from 1-10000, e.g.500. The default value is 5.">
+                placeholder="Type a keyword.">
                 <button onclick="requestHttp()">submit</button>
             </div>
         </body>
@@ -110,6 +175,17 @@
 
                 global_nodes_title = [] // store ids(titles) of added nodes
                 //var global_edges = []
+
+                //drop-down list
+                function show_hide(){
+                    var click = document.getElementById("drop-content");
+                    if(click.style.display === "none") {
+                        click.style.display = "block";
+                    }
+                    else {
+                        click.style.display = "none";
+                    }
+                }
 
                 function requestHttp() {
                     query = document.getElementById("query").value;
@@ -239,7 +315,6 @@
 
                     // Configure the noverlap layout:
                     var noverlapListener = s.configNoverlap({
-<<<<<<< HEAD
                         nodeMargin: 0.5, // the additional minimum space to apply around each and every node.
                         scaleNodes: 1.2, // larger nodes have more space around them if this multiplier > 0.
                         gridSize: 40, // The number of rows and columns to use when dividing the nodes up into cells which the algorithm is applied to. Use more rows and columns for larger graphs for a more efficient algorithm.
@@ -247,11 +322,6 @@
                         rendererIndex : 0, // The index of the renderer to use to compute overlap and collisions of the nodes.
                         speed : 2, // A larger value increases the speed with which the algorithm will convergence at the cost of precision.
                         maxIterations : 50, // The maximum number of iterations to run the algorithm for before stopping it.
-=======
-                        nodeMargin: 0.1,
-                        scaleNodes: 1.05,
-                        gridSize: 75,
->>>>>>> 4be70b1... applied another layout 'noverlap' which runs an algorithm that distributes nodes in the network, ensuring that they do not overlap and providing a margin where specified
                         easing: 'quadraticInOut', // animation transition function
                         duration: 5000   // animation duration. Long here for the purposes of this example only
                     });
