@@ -24,8 +24,7 @@
                 .dropdown {
                     position: relative;
                     display: inline-block;
-                    left : 100px;
-                    top : 70px;
+                    left : 10px;
                 }
 
                 .dropbtn {
@@ -62,16 +61,15 @@
         </style>
 
         <body>
-@*            html hover dropdown*@
+            @*            html hover dropdown*@
             <div class="dropdown">
                 <button class="dropbtn">LAYOUT</button>
                 <div class="dropdown-content">
-                    <a id=ForceAtlas2 href="#">ForceAtlas2</a>
                     <a id=Noverlap href="#">Noverlap</a>
+                    <a id=ForceAtlas2 href="#">ForceAtlas2</a>
                 </div>
             </div>
-
-<!--
+                <!--
            <div class = "dropdown">
                 <button class="dropbtn"> LAYOUT </button>
                 <div class="dropdown-content">
@@ -96,7 +94,7 @@
             <div id = "search">
                 <p id="content">Reply Tweets Dataset</p>
 
-                <!-- input box -> query -->
+                    <!-- input box -> query -->
                 <input type="text" class="div" id="query"
                 placeholder="Type a keyword.">
                 <button onclick="requestHttp()">submit</button>
@@ -192,11 +190,23 @@
                     console.log("query = " + query);
 
                     var request = new XMLHttpRequest();
+
+                    // print current time before request
+                    var date = new Date();
+                    var milli = date.getMilliseconds();
+                    console.log("current time before request : "+ date + " " + milli);
+
                     request.open('GET', 'http://localhost:9000/test2?query=' + query, false);
                     request.send(null);
 
                     if (request.status === 200) {
-                        var data = JSON.parse(request.responseText); // a result of request
+                        // print current time after response
+                        var date = new Date();
+                        var milli = date.getMilliseconds();
+                        console.log("current time after response : "+ date + " " + milli);
+
+                        // a result of request
+                        var data = JSON.parse(request.responseText);
                         var title_list_ = data.title_list;
                         var title_list_len = title_list_.length;
 
@@ -214,6 +224,9 @@
                             tmp_list = list.split(','); //string to list
                             to_list.push(tmp_list);
                         }
+
+                        console.log("webserver starting time : " + data.startTime);
+                        console.log("webserver finishing time : " + data.endTime);
 
                         drawGraph();
                     } else {

@@ -1,7 +1,6 @@
 package controllers;
 
 import java.io.*;
-import java.math.BigInteger;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
@@ -28,6 +27,11 @@ public class GraphController extends Controller {
         List<String> title_list = new ArrayList<String>();
 
         URL obj = new URL(POST_URL);
+
+        // print startTime after post request
+        // currentTimeMillis() returns the current time in milliseconds
+        long startTime = System.currentTimeMillis();
+
         HttpURLConnection con = (HttpURLConnection) obj.openConnection();
 
         //add reuqest header
@@ -43,9 +47,13 @@ public class GraphController extends Controller {
         wr.close();
 
         int responseCode = con.getResponseCode();
-        System.out.println("\nSending 'POST' request to URL : " + obj);
-        System.out.println("Post parameters : " + urlParameters);
-        System.out.println("Response Code : " + responseCode);
+
+        // print endTime after response
+        long endTime = System.currentTimeMillis();
+
+//        System.out.println("\nSending 'POST' request to URL : " + obj);
+//        System.out.println("Post parameters : " + urlParameters);
+//        System.out.println("Response Code : " + responseCode);
 
         BufferedReader in = new BufferedReader(
                 new InputStreamReader(con.getInputStream()));
@@ -69,7 +77,7 @@ public class GraphController extends Controller {
 
         String to_list = "";
         /*
-           [ [ㅁ,ㅁ], [ㅁ], [ㅁ,ㅁ,ㅁ] ]  is hard to parse in javascript , so
+           is hard to parse in javascript , so
              [ㅁ,ㅁ]  [ㅁ]  [ㅁ,ㅁ,ㅁ] is same, but
              [ㅁ,ㅁ],,[ㅁ],,[ㅁ,ㅁ,ㅁ],, => 'list.toString() + ,,' is a string, easy to parse
          */
@@ -121,6 +129,8 @@ public class GraphController extends Controller {
 
         result.put("title_list", title_list.toString());
         result.put("to_list", to_list);
+        result.put("startTime", startTime);
+        result.put("endTime", endTime);
 
         //print result
         System.out.println(response.toString());
