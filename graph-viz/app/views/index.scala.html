@@ -4,7 +4,7 @@
 
     <html>
 
-        <title>Reply Tweets Deck.GL</title>
+        <title> Wiki articles </title>
         <meta name='viewport' />
 
         <style type="text/css">
@@ -17,90 +17,28 @@
                 }
                 #search{
                     left:500px;
-                    top:50px;
+                    top:0px;
                     position:absolute;
                 }
-
-                .dropdown {
-                    position: relative;
-                    display: inline-block;
-                    left : 10px;
-                }
-
-                .dropbtn {
-                    background-color: #4CAF50;
-                    color: white;
-                    padding: 16px;
-                    font-size: 16px;
-                    border: none;
-                    width : 120px;
-                }
-
-                .dropdown-content {
-                    display: none;
-                    position: absolute;
-                    background-color: #f1f1f1;
-                    min-width: 160px;
-                    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
-                    z-index: 1;
-                }
-
-                .dropdown-content a {
-                    color: black;
-                    padding: 12px 16px;
-                    text-decoration: none;
-                    display: block;
-                }
-
-                .dropdown-content a:hover {background-color: #ddd;}
-
-                .dropdown:hover .dropdown-content {display: block;}
-
-                .dropdown:hover .dropbtn {background-color: #3e8e41;}
-
         </style>
 
         <body>
-            @*            html hover dropdown*@
-            <div class="dropdown">
-                <button class="dropbtn">LAYOUT</button>
-                <div class="dropdown-content">
-                    <a id=Noverlap href="#">Noverlap</a>
-                    <a id=ForceAtlas2 href="#">ForceAtlas2</a>
-                </div>
-            </div>
-                <!--
-           <div class = "dropdown">
-                <button class="dropbtn"> LAYOUT </button>
-                <div class="dropdown-content">
-                    <button id="ForceAtlas2">ForceAtlas2</button>
-                    <button id="Noverlap">Noverlap</button>
-                </div>
-            </div>
-
-            <div class = "dropDownDiv">
-                <button onclick="show_hide()" class="dropDownButton"> LAYOUT </button>
-               <div style="display:none;" id="drop-content">
-                    <button id="ForceAtlas2">ForceAtlas2</button>
-                    <button id="Noverlap">Noverlap</button>
-                </div>
-            </div>
--->
 
             <div id="graph-container" style="width: 1000px; height: 800px;">
             </div>
 
             <div id="map" style="width:100vw; height: 100vh"></div>
             <div id = "search">
-                <p id="content">Reply Tweets Dataset</p>
+                <p id="content"> Wiki articles :: Big Graph Visualization </p>
 
-                    <!-- input box -> query -->
+                <<!-- input box -> query -->
                 <input type="text" class="div" id="query"
-                placeholder="Type a keyword.">
+                placeholder="Search number of nodes, range from 1-10000, e.g.500. The default value is 5.">
                 <button onclick="requestHttp()">submit</button>
             </div>
         </body>
 
+        @*      copied from https://jsfiddle.net/sim51/xck9a7yf/?utm_source=website&utm_medium=embed&utm_campaign=xck9a7yf*@
         <script src="https://cdn.jsdelivr.net/npm/sigma@@1.2.1/src/sigma.core.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/sigma@@1.2.1/src/conrad.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/sigma@@1.2.1/src/utils/sigma.utils.js"></script>
@@ -146,21 +84,11 @@
         <script src="https://cdn.jsdelivr.net/npm/sigma@@1.2.1/src/misc/sigma.misc.bindEvents.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/sigma@@1.2.1/src/misc/sigma.misc.bindDOMEvents.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/sigma@@1.2.1/src/misc/sigma.misc.drawHovers.js"></script>
-
-        <script src="https://cdn.jsdelivr.net/npm/sigma@@1.2.1/src/renderers/svg/sigma.svg.utils.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/sigma@@1.2.1/src/renderers/svg/sigma.svg.nodes.def.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/sigma@@1.2.1/src/renderers/svg/sigma.svg.edges.def.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/sigma@@1.2.1/src/renderers/svg/sigma.svg.edges.curve.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/sigma@@1.2.1/src/renderers/svg/sigma.svg.labels.def.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/sigma@@1.2.1/src/renderers/svg/sigma.svg.hovers.def.js"></script>
             <!-- Sigma plugins -->
+        <script src="https://cdn.jsdelivr.net/npm/sigma@@1.2.1/plugins/sigma.layout.forceAtlas2/supervisor.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/sigma@@1.2.1/plugins/sigma.layout.forceAtlas2/worker.js"></script>
         @*      copied ---- end ----*@
 
-        <script src="https://cdn.jsdelivr.net/npm/sigma@@1.2.1/plugins/sigma.layout.noverlap/sigma.layout.noverlap.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/sigma@@1.2.1/plugins/sigma.plugins.animate/sigma.plugins.animate.js"></script>
-
-        @*        <script src="https://cdn.jsdelivr.net/npm/sigma@@1.2.1/plugins/sigma.layout.forceAtlas2/supervisor.js"></script>*@
-        @*        <script src="https://cdn.jsdelivr.net/npm/sigma@@1.2.1/plugins/sigma.layout.forceAtlas2/worker.js"></script>*@
         @*        <script src="/assets/javascripts/sigma.min.js"></script>*@
 
         <script src="/assets/javascripts/deckgl.min.js"></script>
@@ -172,18 +100,6 @@
                 to_list=[]
 
                 global_nodes_title = [] // store ids(titles) of added nodes
-                //var global_edges = []
-
-                //drop-down list
-                function show_hide(){
-                    var click = document.getElementById("drop-content");
-                    if(click.style.display === "none") {
-                        click.style.display = "block";
-                    }
-                    else {
-                        click.style.display = "none";
-                    }
-                }
 
                 function requestHttp() {
                     query = document.getElementById("query").value;
@@ -200,111 +116,30 @@
                     request.send(null);
 
                     if (request.status === 200) {
+
                         // print current time after response
                         var date = new Date();
                         var milli = date.getMilliseconds();
                         console.log("current time after response : "+ date + " " + milli);
 
-                        // a result of request
-                        var data = JSON.parse(request.responseText);
-                        var title_list_ = data.title_list;
-                        var title_list_len = title_list_.length;
+                        var ret = JSON.parse(request.responseText);
+                        var g = ret.g;
+                        var time = ret.time;
 
-                        title_list_ = title_list_.substring(1, title_list_len - 1);
-                        title_list = title_list_.split(',');
+                        //webserver time log
+                        console.log("webserver starting time : " + time.startTime);
+                        console.log("webserver finishing time : " + time.endTime);
 
-                        //to_list
-                        var to_list_ = data.to_list; // [ㅁ,ㅁ],,[ㅁ],,[ㅁ,ㅁ,ㅁ],,
-                        var list_list = to_list_.split(",,"); // a list which contains lists
-
-                        // list_list to a real double_list
-                        for (var i = 0; i < list_list.length; i++) {
-                            var list = list_list[i];
-                            list = list.substring(1, list.length - 1);
-                            tmp_list = list.split(','); //string to list
-                            to_list.push(tmp_list);
-                        }
-
-                        console.log("webserver starting time : " + data.startTime);
-                        console.log("webserver finishing time : " + data.endTime);
-
-                        drawGraph();
+                        drawGraph(g);
                     } else {
                         console.log("response error");
                     }
                 }
 
-                function drawGraph(){
-                    var g = {
-                        nodes: [],
-                        edges: []
-                    };
-
-                    var title_list_cnt = title_list.length;
-                    global_edges = 0;
-
-                    //push a node to a graph object
-                    for (var idx=0; idx<title_list_cnt; idx++) {
-                        g.nodes.push({
-                            //s.graph.addNode({
-                            id: title_list[idx],
-                            label: title_list[idx],
-                            x: Math.random(),
-                            y: Math.random(),
-                            size: 1,
-                            color: '#f00'
-                        });
-
-                        global_nodes_title.push(title_list[idx]);
-                    }
-
-                    // connect edges
-                    for (var i=0; i<title_list_cnt; i++){
-                        for (var j=0; j<to_list[i].length; j++){
-                            if(global_nodes_title.includes(to_list[i][j])===false){
-                                // first, make a node
-                                g.nodes.push({
-                                    //s.graph.addNode({
-                                    id: to_list[i][j],
-                                    label: to_list[i][j],
-                                    x: Math.random(),
-                                    y: Math.random(),
-                                    size: 1,
-                                    color: '#f00'
-                                });
-
-                                // mark that node is made
-                                global_nodes_title.push(to_list[i][j]);
-
-                                //connect edges
-                                g.edges.push({
-                                    id : global_edges,
-                                    source: title_list[i],
-                                    target: to_list[i][j],
-                                    size: 3,
-                                    color: '#00f',
-                                    type:'arrow'
-                                });
-                            }
-
-                            // if it is an exist node
-                            else{
-                                g.edges.push({
-                                    id : global_edges,
-                                    source: title_list[i],
-                                    target: to_list[i][j],
-                                    size: 3,
-                                    color: '#00f',
-                                    type:'arrow'
-                                });
-                            }
-
-                            global_edges += 1;
-                        }
-                    }
+                function drawGraph(g){
 
                     var s = new sigma({
-                        graph: g,
+                        //graph: g,
                         //container: 'graph-container',
                         renderer: {
                             container: document.getElementById('graph-container'),
@@ -312,11 +147,11 @@
                             //type: 'canvas'
                         },
                         settings: { // change the size of the node depending on the number of data
-                            minNodeSize: 8, // node label is shown if it is bigger than 7
-                            maxNodeSize: 8, // node label is shown if it is bigger than 7
+                            minNodeSize: 6, // node label is shown if it is bigger than 7
+                            maxNodeSize: 6, // node label is shown if it is bigger than 7
                             maxEdgeSize: 1, // 3 or 4
                             doubleClickEnabled: false,
-                            arrowSizeRatio: 3
+                            arrowSizeRatio: 2
                             /*
                                each graph is formed based on center of circle
                                It seems to mean the degree of spreadability
@@ -326,35 +161,35 @@
                         }
                     });
 
-                    // Configure the noverlap layout:
-                    var noverlapListener = s.configNoverlap({
-                        nodeMargin: 0.5, // the additional minimum space to apply around each and every node.
-                        scaleNodes: 1.2, // larger nodes have more space around them if this multiplier > 0.
-                        gridSize: 40, // The number of rows and columns to use when dividing the nodes up into cells which the algorithm is applied to. Use more rows and columns for larger graphs for a more efficient algorithm.
-                        permittedExpansion : 1.1, // the maximum ratio to apply to the bounding box, i.e. the maximum by which the network is permitted to expand.
-                        rendererIndex : 0, // The index of the renderer to use to compute overlap and collisions of the nodes.
-                        speed : 2, // A larger value increases the speed with which the algorithm will convergence at the cost of precision.
-                        maxIterations : 50, // The maximum number of iterations to run the algorithm for before stopping it.
-                        easing: 'quadraticInOut', // animation transition function
-                        duration: 5000   // animation duration. Long here for the purposes of this example only
+                    // load the graph
+                    s.graph.read(g);
+
+                    // draw the graph
+                    s.refresh();
+
+                    // launch force-atlas with parameters
+                    // https://github.com/jacomyal/sigma.js/tree/master/plugins/sigma.layout.forceAtlas2
+                    s.startForceAtlas2({
+                        linLogMode : true, //clusters more tight.
+                        //outboundAttractionDistribution : true,
+                        //adjustSizes : true,
+                        //edgeWeightInfluence : 1, //0 = no influence, 1 = normal
+                        scalingRatio : 1, //how much repulsion you want. More makes a more sparse graph.
+                        strongGravityMode : false,
+                        //gravity : 1, //attracts nodes to the center. Prevents islands from drifting away.
+                        barnesHutOptimize: true, //to improve repulsion's scalability, useful for large graph but harmful to small ones.
+                        barnesHutTheta : 1,
+                        slowDown : 1,
+                        //startingIterations : 1, //number of iterations to be run before the first render.
+                        //iterationsPerRender : 2, //number of iterations to be run before each render.
+                        worker: true //?
                     });
 
-                    // Bind the events:
-                    noverlapListener.bind('start stop interpolate', function(e) {
-                        console.log(e.type);
-                        if(e.type === 'start') {
-                            console.time('noverlap');
-                        }
-                        if(e.type === 'interpolate') {
-                            console.timeEnd('noverlap');
-                        }
-                    });
-
-                    // Start the layout:
-                    s.startNoverlap();
+                    // can control the duration of an effect
+                    window.setTimeout(function() {s.killForceAtlas2()}, 10000);
                 }
         </script>
     </html>
-}}}
+}
 
 

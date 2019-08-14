@@ -1,14 +1,17 @@
 package controllers;
 
+
+import play.libs.Json;
+
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
+//import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-
-import play.libs.Json;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -20,7 +23,9 @@ public class GraphController extends Controller {
     @Qualifier("propertyResolver")
     @Autowired
     private PropertyResolver propertyResolver;
-    private static final String POST_URL = "http://128.195.10.93:8080/";
+
+    private static final String POST_URL = "http://128.195.10.93:8080/"; //simple-wiki
+    //private static final String POST_URL = "http://128.195.10.93:9200/"; //en-wiki
 
     public Result index(String query) throws IOException {
 
@@ -51,10 +56,6 @@ public class GraphController extends Controller {
         // print endTime after response
         long endTime = System.currentTimeMillis();
 
-//        System.out.println("\nSending 'POST' request to URL : " + obj);
-//        System.out.println("Post parameters : " + urlParameters);
-//        System.out.println("Response Code : " + responseCode);
-
         BufferedReader in = new BufferedReader(
                 new InputStreamReader(con.getInputStream()));
         String inputLine;
@@ -71,16 +72,13 @@ public class GraphController extends Controller {
         // raw data in core 'hits', split by delimter '},' in the article.
         String hits_list[] = hits_str.split("},");
 
-        int cnt_tmp = 0;
-        ObjectNode result = Json.newObject();
         String text = "";
+        int cnt_node = 0;
+        int global_edges = 0;
 
-        String to_list = "";
-        /*
-           is hard to parse in javascript , so
-             [ㅁ,ㅁ]  [ㅁ]  [ㅁ,ㅁ,ㅁ] is same, but
-             [ㅁ,ㅁ],,[ㅁ],,[ㅁ,ㅁ,ㅁ],, => 'list.toString() + ,,' is a string, easy to parse
-         */
+        //ArrayNode which contains nodes_array and edges_array
+        ArrayNode nodes_array = Json.newArray();
+        ArrayNode edges_array = Json.newArray();
 
         for(String str : hits_list) {
             //source
@@ -94,47 +92,80 @@ public class GraphController extends Controller {
             //extract only a title in "title\": \"TITLE\""
             title = title.substring(title.indexOf("title") + 9, title.length() - 1);
 
-            //add the title to the title list
+            //node
+            ObjectNode node = Json.newObject();
+            node.put("id", title);
+            node.put("label", title);
+            node.put("x", Math.random());
+            node.put("y", Math.random());
+            node.put("size", 1);
+            node.put("color", "#f00");
+
+
             title_list.add(title);
+            nodes_array.add(node);
 
             //to_list
-            //lists in each 'to_list'
-            List<String> link_list = new ArrayList<String>();
-
-            String[] results = source.split(",",2);
+            String[] results = source.split(",", 2);
             text = results[1];
 
             //split using '[[' as a delimter in the text (because link is formed as '[[LINK]]'
             String[] list_tmp = text.split("\\[\\[");
 
-            cnt_tmp = list_tmp.length;
-
             //find links in a article
             int flag = 0;
-            for (String ele :list_tmp) {
+            for (String ele : list_tmp) {
                 //맨 첫 원소는 쓰레기 값
-                if (flag == 0){
-                    flag =1;
+                if (flag == 0) {
+                    flag = 1;
                     continue;
                 }
-                String ele_tmp = ele;
-                String link = ele_tmp.split("\\]\\]")[0];
+                String link = ele.split("\\]\\]")[0];
 
-                link_list.add(link);
+                ObjectNode edge = Json.newObject();
+                if(title_list.contains(link)){
+
+                }
+                else{ //link라는 노드가 없으면
+                    node = Json.newObject();
+                    node.put("id", link);
+                    node.put("label", link);
+                    node.put("x", Math.random());
+                    node.put("y", Math.random());
+                    node.put("size", 1);
+                    node.put("color", "#f00");
+
+                    title_list.add(link); //노드생겻다고 추가해주고
+                    nodes_array.add(node); //노드 실제로 집어넣음
+
+                }
+                edge.put("id", global_edges);
+                edge.put("source", nodes_array.get(cnt_node).get("id"));
+                edge.put("target", link);
+                edge.put("size", 3);
+                edge.put("color", "#00f");
+                edge.put("type", "arrow");
+
+                edges_array.add(edge);
+                global_edges++;
             }
 
-            to_list = to_list + link_list.toString();
-            to_list = to_list + ",,";
+            cnt_node++; //0->1 (to_list 인덱스 접근때문에 후에 증가)
         }
 
-        result.put("title_list", title_list.toString());
-        result.put("to_list", to_list);
-        result.put("startTime", startTime);
-        result.put("endTime", endTime);
+        ObjectNode g =  Json.newObject();
+        g.put("nodes", nodes_array);
+        g.put("edges", edges_array);
 
-        //print result
-        System.out.println(response.toString());
+        ObjectNode time = Json.newObject();
+        time.put("startTime", startTime);
+        time.put("endTime", endTime);
 
-        return ok(result);
+        //ObjectNode which contains graph g and time log
+        ObjectNode ret = Json.newObject();
+        ret.put("g", g);
+        ret.put("time", time);
+
+        return ok(ret);
     }
 }
