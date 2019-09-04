@@ -10,3 +10,6 @@ scalaVersion := "2.12.8"
 libraryDependencies += guice
 libraryDependencies += javaJdbc
 libraryDependencies += "org.postgresql" % "postgresql" % "42.1.4"
+
+
+libraryDependencies += "com.typesafe.play" %% "play-json" % "2.7.2"

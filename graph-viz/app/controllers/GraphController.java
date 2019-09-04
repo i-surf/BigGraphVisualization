@@ -1,6 +1,5 @@
 package controllers;
 
-
 import play.libs.Json;
 
 import java.io.*;
@@ -94,16 +93,21 @@ public class GraphController extends Controller {
 
             //node
             ObjectNode node = Json.newObject();
-            node.put("id", title);
-            node.put("label", title);
-            node.put("x", Math.random());
-            node.put("y", Math.random());
-            node.put("size", 1);
-            node.put("color", "#f00");
 
+            if(title_list.contains(title)){
 
-            title_list.add(title);
-            nodes_array.add(node);
+            }
+            else {
+                node.put("id", title);
+                node.put("label", title);
+                node.put("x", Math.random());
+                node.put("y", Math.random());
+                node.put("size", 4);
+                node.put("color", "#00f");
+
+                title_list.add(title);
+                nodes_array.add(node);
+            }
 
             //to_list
             String[] results = source.split(",", 2);
@@ -115,7 +119,7 @@ public class GraphController extends Controller {
             //find links in a article
             int flag = 0;
             for (String ele : list_tmp) {
-                //맨 첫 원소는 쓰레기 값
+                // first element is a garbage value
                 if (flag == 0) {
                     flag = 1;
                     continue;
@@ -126,31 +130,37 @@ public class GraphController extends Controller {
                 if(title_list.contains(link)){
 
                 }
-                else{ //link라는 노드가 없으면
+
+                // if there is no 'link' node
+                else{
                     node = Json.newObject();
                     node.put("id", link);
                     node.put("label", link);
                     node.put("x", Math.random());
                     node.put("y", Math.random());
-                    node.put("size", 1);
+                    node.put("size", 4);
                     node.put("color", "#f00");
 
-                    title_list.add(link); //노드생겻다고 추가해주고
-                    nodes_array.add(node); //노드 실제로 집어넣음
+                    //mark adding a node 'link'
+                    title_list.add(link);
+
+                    // real putting the node into nodes array
+                    nodes_array.add(node);
 
                 }
                 edge.put("id", global_edges);
-                edge.put("source", nodes_array.get(cnt_node).get("id"));
+                edge.put("source", title);
                 edge.put("target", link);
                 edge.put("size", 3);
-                edge.put("color", "#00f");
+                edge.put("color", "#000");
                 edge.put("type", "arrow");
 
                 edges_array.add(edge);
                 global_edges++;
             }
 
-            cnt_node++; //0->1 (to_list 인덱스 접근때문에 후에 증가)
+            // make 0 to 1 (after access to 'to_list' index)
+            cnt_node++;
         }
 
         ObjectNode g =  Json.newObject();

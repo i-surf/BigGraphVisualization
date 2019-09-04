@@ -76,9 +76,9 @@
             <div id = "search">
                 <p id="content"> Wiki articles :: Big Graph Visualization </p>
 
-                <<!-- input box -> query -->
+                <!-- input box -> query -->
                 <input type="text" class="div" id="query"
-                placeholder="Search number of nodes, range from 1-10000, e.g.500. The default value is 5.">
+                placeholder="type a keyword">
                 <button onclick="requestHttp()">submit</button>
             </div>
         </body>
@@ -246,7 +246,7 @@
                     });
 
                     // can control the duration of an effect
-                    window.setTimeout(function() {s.killForceAtlas2()}, 10000);
+                    window.setTimeout(function() {s.killForceAtlas2()}, 20000);
                 }
 
                 function forceatlas2() {
@@ -304,7 +304,7 @@
                         });
 
                         // can control the duration of an effect
-                        window.setTimeout(function() {s.killForceAtlas2()}, 10000);
+                        window.setTimeout(function() {s.killForceAtlas2()}, 20000);
 
                     }, 2000);
                 }
@@ -372,5 +372,4 @@
         </script>
     </html>
 }
-
 
