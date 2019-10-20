@@ -15,7 +15,8 @@ Eclipse-SourceReferences: scm:git:git://git.eclipse.org/gitroot/jdt/ec
  ;commitId=575f862fdd04c21d641a1aa59ca68a0ddd282317
 Bundle-Vendor: %providerName
 Import-Package: com.ibm.icu.text,
- com.fasterxml.jackson.databind
+ com.fasterxml.jackson.databind,
+ org.json.simple
 Export-Package: com.sun.jdi;x-friends:="org.eclipse.jdt.debug.ui,org.e
  clipse.jdt.launching",com.sun.jdi.connect;x-friends:="org.eclipse.jdt
  .debug.ui,org.eclipse.jdt.launching",com.sun.jdi.connect.spi;x-friend

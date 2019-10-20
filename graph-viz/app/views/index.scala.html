@@ -1,11 +1,10 @@
 @()
 
-
 @defining(play.core.PlayVersion.current) { version =>
 
     <html>
 
-        <title>Reply Tweets Deck.GL</title>
+        <title> Wiki articles </title>
         <meta name='viewport' />
 
         <style type="text/css">
@@ -21,165 +20,360 @@
                     top:0px;
                     position:absolute;
                 }
+
+                .dropdown {
+                    position: relative;
+                    display: inline-block;
+                    left : 10px;
+                }
+
+                .dropbtn {
+                    background-color: #4CAF50;
+                    color: white;
+                    padding: 16px;
+                    font-size: 16px;
+                    border: none;
+                    width : 120px;
+                }
+
+                .dropdown-content {
+                    display: none;
+                    position: absolute;
+                    background-color: #f1f1f1;
+                    min-width: 160px;
+                    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+                    z-index: 1;
+                }
+
+                .dropdown-content a {
+                    color: black;
+                    padding: 12px 16px;
+                    text-decoration: none;
+                    display: block;
+                }
+
+                .dropdown-content a:hover {background-color: #ddd;}
+
+                .dropdown:hover .dropdown-content {display: block;}
+
+                .dropdown:hover .dropbtn {background-color: #3e8e41;}
+
         </style>
 
         <body>
+            <div class="dropdown">
+                <button class="dropbtn">LAYOUT</button>
+                <div class="dropdown-content">
+                    <a id="Noverlap" href="#" onclick="return noverlap();">Noverlap</a>
+                    <a id="ForceAtlas2" href="#" onclick="return forceatlas2();">ForceAtlas2</a>
+                </div>
+            </div>
 
             <div id="graph-container" style="width: 1000px; height: 800px;">
             </div>
 
             <div id="map" style="width:100vw; height: 100vh"></div>
             <div id = "search">
-                <p id="content">Reply Tweets Dataset</p>
+                <p id="content"> Wiki articles :: Big Graph Visualization </p>
 
-                    <!-- 인풋 박스 = query -->
+                <!-- input box -> query -->
                 <input type="text" class="div" id="query"
-                placeholder="Search number of nodes, range from 1-10000, e.g.500. The default value is 5.">
+                placeholder="type a keyword">
                 <button onclick="requestHttp()">submit</button>
             </div>
         </body>
 
-        <script src="/assets/javascripts/sigma.min.js"></script>
+        @*      copied from https://jsfiddle.net/sim51/xck9a7yf/?utm_source=website&utm_medium=embed&utm_campaign=xck9a7yf*@
+        <script src="https://cdn.jsdelivr.net/npm/sigma@@1.2.1/src/sigma.core.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/sigma@@1.2.1/src/conrad.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/sigma@@1.2.1/src/utils/sigma.utils.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/sigma@@1.2.1/src/utils/sigma.polyfills.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/sigma@@1.2.1/src/sigma.settings.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/sigma@@1.2.1/src/classes/sigma.classes.dispatcher.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/sigma@@1.2.1/src/classes/sigma.classes.configurable.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/sigma@@1.2.1/src/classes/sigma.classes.graph.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/sigma@@1.2.1/src/classes/sigma.classes.camera.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/sigma@@1.2.1/src/classes/sigma.classes.quad.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/sigma@@1.2.1/src/classes/sigma.classes.edgequad.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/sigma@@1.2.1/src/captors/sigma.captors.mouse.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/sigma@@1.2.1/src/captors/sigma.captors.touch.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/sigma@@1.2.1/src/renderers/sigma.renderers.canvas.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/sigma@@1.2.1/src/renderers/sigma.renderers.webgl.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/sigma@@1.2.1/src/renderers/sigma.renderers.svg.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/sigma@@1.2.1/src/renderers/sigma.renderers.def.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/sigma@@1.2.1/src/renderers/canvas/sigma.canvas.labels.def.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/sigma@@1.2.1/src/renderers/canvas/sigma.canvas.hovers.def.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/sigma@@1.2.1/src/renderers/canvas/sigma.canvas.nodes.def.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/sigma@@1.2.1/src/renderers/canvas/sigma.canvas.edges.def.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/sigma@@1.2.1/src/renderers/canvas/sigma.canvas.edges.curve.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/sigma@@1.2.1/src/renderers/canvas/sigma.canvas.edges.arrow.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/sigma@@1.2.1/src/renderers/canvas/sigma.canvas.edges.curvedArrow.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/sigma@@1.2.1/src/renderers/canvas/sigma.canvas.edgehovers.def.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/sigma@@1.2.1/src/renderers/canvas/sigma.canvas.edgehovers.curve.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/sigma@@1.2.1/src/renderers/canvas/sigma.canvas.edgehovers.arrow.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/sigma@@1.2.1/src/renderers/canvas/sigma.canvas.edgehovers.curvedArrow.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/sigma@@1.2.1/src/renderers/canvas/sigma.canvas.extremities.def.js"></script>
+
+        <script src="https://cdn.jsdelivr.net/npm/sigma@@1.2.1/src/renderers/webgl/sigma.webgl.edges.arrow.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/sigma@@1.2.1/src/renderers/webgl/sigma.webgl.edges.def.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/sigma@@1.2.1/src/renderers/webgl/sigma.webgl.edges.fast.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/sigma@@1.2.1/src/renderers/webgl/sigma.webgl.edges.thickLine.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/sigma@@1.2.1/src/renderers/webgl/sigma.webgl.edges.thickLineCPU.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/sigma@@1.2.1/src/renderers/webgl/sigma.webgl.edges.thickLineGPU.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/sigma@@1.2.1/src/renderers/webgl/sigma.webgl.nodes.def.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/sigma@@1.2.1/src/renderers/webgl/sigma.webgl.nodes.fast.js"></script>
+
+        <script src="https://cdn.jsdelivr.net/npm/sigma@@1.2.1/src/middlewares/sigma.middlewares.rescale.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/sigma@@1.2.1/src/middlewares/sigma.middlewares.copy.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/sigma@@1.2.1/src/misc/sigma.misc.animation.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/sigma@@1.2.1/src/misc/sigma.misc.bindEvents.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/sigma@@1.2.1/src/misc/sigma.misc.bindDOMEvents.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/sigma@@1.2.1/src/misc/sigma.misc.drawHovers.js"></script>
+            <!-- Sigma plugins -->
+
+        <script src="https://cdn.jsdelivr.net/npm/sigma@@1.2.1/plugins/sigma.layout.noverlap/sigma.layout.noverlap.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/sigma@@1.2.1/plugins/sigma.plugins.animate/sigma.plugins.animate.js"></script>
+
+        <script src="https://cdn.jsdelivr.net/npm/sigma@@1.2.1/plugins/sigma.layout.forceAtlas2/supervisor.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/sigma@@1.2.1/plugins/sigma.layout.forceAtlas2/worker.js"></script>
+        @*      copied ---- end ----*@
+        @*        <script src="/assets/javascripts/sigma.min.js"></script>*@
 
         <script src="/assets/javascripts/deckgl.min.js"></script>
         <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.50.0/mapbox-gl.js'></script>
         <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.50.0/mapbox-gl.css' rel='stylesheet' />
 
         <script>
-                /* mapboxgl.accessToken = 'pk.eyJ1IjoiamVyZW15bGkiLCJhIjoiY2lrZ2U4MWI4MDA4bHVjajc1am1weTM2aSJ9.JHiBmawEKGsn3jiRK_d0Gw';
-                 const map = new mapboxgl.Map({
-                     container: 'map',
-                     style: 'mapbox://styles/mapbox/light-v9',
-                     center: [-96.35,39.5],
-                     zoom: 3.7
-                 });
-                */
+                title_list  =[]
+                to_list=[]
 
-                title_list = ['Hanbok', 'Hangul', 'Jeju']
-                to_list = [ ['Jeju'], ['Haha', 'Happy'], ['help', 'me'] ]
+                global_nodes_title = [] // store ids(titles) of added nodes
+                var s, g;
 
-                function drawGraph(){
-
-                    /*
-                    이미 title에 Korea가 있는거 빼고, content에 Korea가 있는 것만 리스트들로 넘겨줄것임
-                    일단 첫번째 그래프를 그리고, 노드를 클릭하면 재쿼리 날람
-                    */
-
-                    var cnt = title_list.length;
-                    console.log('len')
-                    console.log(cnt)
-
-                    global_edges = 0
-
-                    /*
-                    추가할기능
-                    (1) 데이터 많아지면 노드 커지게
-                    (2) 노드위에 마우스 올리거나 클릭하면 text보이게 or 클릭하면 해당 링크로 이동
-                    (3) cycle을 형성하면 direct로 바꾸게 - 2개일 때만 해당
-                    (4) label을 노드 점 대신에 하면, edge가 label가리는 일 없을듯
-                    (5) 중복 생기면 (search 같은 키워드로 계속 누를때) 노드/에지 없어지고 레이블만 남는 문제
-                    (6) 주석 ///////////////////// 부분 : to_list 집합에 같은 타이틀이 있으면 중복 id라고 할듯
-                        -> title로 node를 만드는데, 중복관련 문제가 생기는 것 아닌지 생각해보기
-                     */
-
-                    //var s = new sigma('container'); //그래프 그리기 시작
-                    var g = {
-                        nodes: [],
-                        edges: []
-                    };
-
-                    //node
-                    for (var idx=0; idx<cnt; idx++){
-                        g.nodes.push({
-                            //s.graph.addNode({
-                            id : 'n' + title_list[idx],
-                            label : title_list[idx],
-                            x : Math.random(),
-                            y : Math.random(),
-                            size : 1,
-                            color : '#f00'
-                        });
-                        console.log('n'+ title_list[idx])
-
-                        for(var k=0; k<to_list[idx].length; k++){
-                            g.nodes.push({
-                                /////////////////////
-                                //s.graph.addNode({
-                                id : 'title' + to_list[idx][k],
-                                label : to_list[idx][k],
-                                x : Math.random(),
-                                y : Math.random(),
-                                size : 1,
-                                color : '#f00'
-                            });
-
-                            console.log('title'+to_list[idx][k])
-                        }
+                //drop-down list
+                function show_hide(){
+                    var click = document.getElementById("drop-content");
+                    if(click.style.display === "none") {
+                        click.style.display = "block";
                     }
-
-                    for (var i=0; i<cnt; i++){
-                        for (var j=0; j<to_list[i].length; j++){
-                            g.edges.push({
-                                id : global_edges,
-                                source: 'n' + title_list[i],
-                                target: 'title' + to_list[i][j],
-                                size: 3,
-                                color: '#00f',
-                                type:'arrow'
-                            });
-
-                            global_edges += 1;
-                        }
+                    else {
+                        click.style.display = "none";
                     }
-
-                    //debug
-                    console.log(g);
-                    console.log(g.nodes);
-                    console.log(g.edges);
-
-                    var s = new sigma({
-                        graph: g,
-                        container: 'graph-container',
-                        renderer: {
-                            container: document.getElementById('graph-container'),
-                            type: 'WebGL',
-                        },
-                        settings: { //nodeSize는 데이터 수에 따라 굵어지게 바꾸기
-                            minNodeSize: 9, //node label 없어지니까 9이상
-                            maxNodeSize: 9, //node label 없어지니까 9이상
-                            maxEdgeSize: 4, //3 or 4
-                            doubleClickEnabled: false,
-                            arrowSizeRatio: 2, //일단 1로 설정
-                            // 같은 그래프들이 원의 중심을 기준으로 형성되는데
-                            //얼마나 멀리 퍼질것이냐를 의미하는 듯
-                            //30 했더니 브라우저 밖으로 뚫고 나감, 1로 하면 창안에서 매우 다양
-                        }
-                    });
-                    s.refresh();
                 }
 
-                function requestHttp(){
-                    /*      if(map.getLayer('arc')!=undefined){
-                            map.removeLayer('arc')
-                        }
-                    */
-
+                function requestHttp() {
                     query = document.getElementById("query").value;
-                    console.log("query는 : " + query);
+                    console.log("query = " + query);
 
                     var request = new XMLHttpRequest();
-                    // request.open('GET', 'http://localhost:9000/replies?query='+query, false);//for async
-                    request.open('GET', 'http://localhost:9000/test2?query='+query, false);
+
+                    // print current time before request
+                    var date = new Date();
+                    var milli = date.getMilliseconds();
+                    console.log("current time before request : "+ date + " " + milli);
+
+                    request.open('GET', 'http://localhost:9000/test2?query=' + query, false);
                     request.send(null);
 
                     if (request.status === 200) {
-                        console.log(drawGraph());
+
+                        // print current time after response
+                        var date = new Date();
+                        var milli = date.getMilliseconds();
+                        console.log("current time after response : "+ date + " " + milli);
+
+                        var ret = JSON.parse(request.responseText);
+                        g = ret.g;
+                        var time = ret.time;
+
+                        //webserver time log
+                        console.log("webserver starting time : " + time.startTime);
+                        console.log("webserver finishing time : " + time.endTime);
+
+                        drawGraph(g);
+                    } else {
+                        console.log("response error");
                     }
                 }
 
+                function drawGraph(g){
+
+                    setTimeout(function() {
+
+                        s = new sigma({
+                            graph: g,
+                            //container: 'graph-container',
+                            renderer: {
+                                container: document.getElementById('graph-container'),
+                                type: 'WebGL'
+                                //type: 'canvas'
+                            },
+                            settings: { // change the size of the node depending on the number of data
+                                minNodeSize: 3, // node label is shown if it is bigger than 7
+                                maxNodeSize: 3, // node label is shown if it is bigger than 7
+                                maxEdgeSize: 1, // 3 or 4
+                                doubleClickEnabled: false,
+                                arrowSizeRatio: 3
+                                /*
+                                   each graph is formed based on center of circle
+                                   It seems to mean the degree of spreadability
+                                   If I set as 30, it goes out of the screen.
+                                   1 maybe vary.
+                                */
+                            }
+                        });
+
+                        // Configure the noverlap layout:
+                        var noverlapListener = s.configNoverlap({
+                            nodeMargin: 0.5, // the additional minimum space to apply around each and every node.
+                            scaleNodes: 1.2, // larger nodes have more space around them if this multiplier > 0.
+                            gridSize: 40, // The number of rows and columns to use when dividing the nodes up into cells which the algorithm is applied to. Use more rows and columns for larger graphs for a more efficient algorithm.
+                            permittedExpansion : 1.1, // the maximum ratio to apply to the bounding box, i.e. the maximum by which the network is permitted to expand.
+                            rendererIndex : 0, // The index of the renderer to use to compute overlap and collisions of the nodes.
+                            speed : 2, // A larger value increases the speed with which the algorithm will convergence at the cost of precision.
+                            maxIterations : 50, // The maximum number of iterations to run the algorithm for before stopping it.
+                            easing: 'quadraticInOut', // animation transition function
+                            duration: 5000   // animation duration. Long here for the purposes of this example only
+                        });
+
+                        // Bind the events:
+                        noverlapListener.bind('start stop interpolate', function(e) {
+                            console.log(e.type);
+                            if(e.type === 'start') {
+                                console.time('noverlap');
+                            }
+                            if(e.type === 'interpolate') {
+                                console.timeEnd('noverlap');
+                            }
+                        });
+
+                        // Start the layout:
+                        s.startNoverlap();
+
+                    }, 2000);
+                }
+
+                function forceatlas2() {
+                    console.log("called forceatlas2 function successfully");
+
+                    setTimeout(function() {
+                        s.kill(g);
+                        console.log("killed the original graph and start forceAtlas2");
+
+                        s = new sigma({
+                            //graph: g,
+                            //container: 'graph-container',
+                            renderer: {
+                                container: document.getElementById('graph-container'),
+                                type: 'WebGL'
+                                //type: 'canvas'
+                            },
+                            settings: { // change the size of the node depending on the number of data
+                                minNodeSize: 6, // node label is shown if it is bigger than 7
+                                maxNodeSize: 6, // node label is shown if it is bigger than 7
+                                maxEdgeSize: 1, // 3 or 4
+                                doubleClickEnabled: false,
+                                arrowSizeRatio: 2
+                                /*
+                                   each graph is formed based on center of circle
+                                   It seems to mean the degree of spreadability
+                                   If I set as 30, it goes out of the screen.
+                                   1 maybe vary.
+                                */
+                            }
+                        });
+
+                        // load the graph
+                        s.graph.read(g);
+
+                        // draw the graph
+                        s.refresh();
+
+                        // launch force-atlas with parameters
+                        // https://github.com/jacomyal/sigma.js/tree/master/plugins/sigma.layout.forceAtlas2
+                        s.startForceAtlas2({
+                            linLogMode : true, //clusters more tight.
+                            //outboundAttractionDistribution : true,
+                            //adjustSizes : true,
+                            //edgeWeightInfluence : 1, //0 = no influence, 1 = normal
+                            scalingRatio : 1, //how much repulsion you want. More makes a more sparse graph.
+                            strongGravityMode : false,
+                            //gravity : 1, //attracts nodes to the center. Prevents islands from drifting away.
+                            barnesHutOptimize: true, //to improve repulsion's scalability, useful for large graph but harmful to small ones.
+                            barnesHutTheta : 1,
+                            slowDown : 1,
+                            //startingIterations : 1, //number of iterations to be run before the first render.
+                            //iterationsPerRender : 2, //number of iterations to be run before each render.
+                            worker: true //?
+                        });
+
+                        // can control the duration of an effect
+                        window.setTimeout(function() {s.killForceAtlas2()}, 20000);
+
+                    }, 2000);
+                }
+
+                function noverlap() {
+                    console.log("called noverlap function successfully");
+
+                    setTimeout(function() {
+                        s.kill(g);
+                        console.log("killed the original graph and start noverlap");
+
+                        s = new sigma({
+                            graph: g,
+                            //container: 'graph-container',
+                            renderer: {
+                                container: document.getElementById('graph-container'),
+                                type: 'WebGL'
+                                //type: 'canvas'
+                            },
+                            settings: { // change the size of the node depending on the number of data
+                                minNodeSize: 6, // node label is shown if it is bigger than 7
+                                maxNodeSize: 6, // node label is shown if it is bigger than 7
+                                maxEdgeSize: 1, // 3 or 4
+                                doubleClickEnabled: false,
+                                arrowSizeRatio: 3
+                                /*
+                                   each graph is formed based on center of circle
+                                   It seems to mean the degree of spreadability
+                                   If I set as 30, it goes out of the screen.
+                                   1 maybe vary.
+                                */
+                            }
+                        });
+
+                        // Configure the noverlap layout:
+                        var noverlapListener = s.configNoverlap({
+                            nodeMargin: 0.5, // the additional minimum space to apply around each and every node.
+                            scaleNodes: 1.2, // larger nodes have more space around them if this multiplier > 0.
+                            gridSize: 40, // The number of rows and columns to use when dividing the nodes up into cells which the algorithm is applied to. Use more rows and columns for larger graphs for a more efficient algorithm.
+                            permittedExpansion : 1.1, // the maximum ratio to apply to the bounding box, i.e. the maximum by which the network is permitted to expand.
+                            rendererIndex : 0, // The index of the renderer to use to compute overlap and collisions of the nodes.
+                            speed : 2, // A larger value increases the speed with which the algorithm will convergence at the cost of precision.
+                            maxIterations : 50, // The maximum number of iterations to run the algorithm for before stopping it.
+                            easing: 'quadraticInOut', // animation transition function
+                            duration: 5000   // animation duration. Long here for the purposes of this example only
+                        });
+
+                        // Bind the events:
+                        noverlapListener.bind('start stop interpolate', function(e) {
+                            console.log(e.type);
+                            if(e.type === 'start') {
+                                console.time('noverlap');
+                            }
+                            if(e.type === 'interpolate') {
+                                console.timeEnd('noverlap');
+                            }
+                        });
+
+                        // Start the layout:
+                        s.startNoverlap();
+
+                    }, 2000);
+                }
+
         </script>
-
     </html>
-        }}}
-
+}
 
