@@ -1,117 +1,105 @@
+import java.util.*;
+import java.io.*;
 import java.io.File;
-import java.util.List;
+import java.lang.*;
 import java.io.IOException;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.io.FileWriter;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.fasterxml.jackson.databind.node.ArrayNode;
+import java.lang.String;
+import org.json.simple.JSONObject;
+import org.json.simple.JSONArray;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 
 public class App{
-   public static void main(String[] args) {
- 
-       Path path = Paths.get("./src/main/java/enwiki.txt");  
+    public static void main(String[] args) {
+        //file output
+        File file = new File("./src/main/java/enwiki_out1.txt");
+        File file2 = new File("./src/main/java/enwiki_out2.txt");
 
-       Charset cs = StandardCharsets.UTF_8;
+        FileWriter fw = null;
 
-       List<String> in = new ArrayList<String>();
+        //JSON parser object to parse read file
+        JSONParser jsonParser = new JSONParser();
 
-       try{
-           // read all content in a file
-           in = Files.readAllLines(path,cs); 
-       }catch(IOException e){
-           e.printStackTrace();
-       }
+        try (FileReader reader = new FileReader("./src/main/java/out2.txt"))
+        {
+            //Read JSON file
+            Object obj = jsonParser.parse(reader);
 
-       String content = in.toString();
+            JSONObject shards = (JSONObject) obj;
+            JSONObject hits = (JSONObject) shards.get("hits");
+            JSONArray results = (JSONArray) hits.get("hits"); //value of key or inner hits
 
-       // write a file
-       File file = new File("./src/main/java/enwiki_out.txt");
-       FileWriter fw = null;
-       try {
-           fw = new FileWriter(file);
-           fw.write("{ \"result\" : \"[");
+            fw = new FileWriter(file);
+            fw.write("{\"result\":");
+            fw.write("[");
 
-           // parse links from a text
-           // find 'hits' from the 140th index in the response (starts finding after 'first' hits)
-           String hits_str = content.substring(content.indexOf("hits",140), content.length()-2);
+            int article_cnt = 0; 
 
-           // raw data in core 'hits', split by delimter '},' in the article.
-           String hits_list[] = hits_str.split("}},\\{\"_index");
+            // operation per each article
+            for(int i=0; i<results.size(); i++){
+                JSONObject res = (JSONObject) results.get(i); // res = each article
+                JSONObject source = (JSONObject) res.get("_source"); // source = each source
+                source.toJSONString(); // change value form into jsonString
 
-           int hits_cnt = 0;
+                Object title = source.get("title");
+                Object text = source.get("text");
 
-           for(String str : hits_list) {
+                System.out.println("title : " + title);
 
-               hits_cnt ++;
+                //write title and link into the output file
+                fw.write("{");
+                fw.write("\"title\":\"");
+                fw.write(title.toString());
+                fw.write("\",\"text\":\"");
+                fw.write(text.toString());
+                fw.write("\",\"link\":\"");
 
-               //source
-               //extract source(title, text) in each source
-               String source = str.substring(str.indexOf("\"_source\""), str.length() - 2);
-              
-               //title
-               //{"ans":"source\": {\"title\": \"Computer terminal\""}
-               String title = source.split(", \"tex")[0];  
+                //to_link
+                //split using '[[' as a delimiter in the text (because link is formed as '[[LINK]]'
+                String str = text.toString();
+                String[] link_tmp = str.split("\\[\\[");
 
-               //extract only a title in "title\": \"TITLE\""
-               title = title.substring(title.indexOf("title") + 9, title.length() - 1);
-               // System.out.println("title");
-               // System.out.println(title);
+                //find links in a article
+                int flag = 0;
+                int link_cnt = 1; // list_tmp.len = cnt(list) + 1
+                for (String ele : link_tmp) {
+                    // first element is a garbage value
+                    if (flag == 0) {
+                        flag = 1;
+                        continue;
+                    }
+                    link_cnt++;
+                    String link = ele.split("\\]\\]")[0];
 
-               //put title key&value of each element into the output file
-               fw.write("{ \"title\" : \""); // { title : "
-               fw.write(title); // { title : "windows phone
-               fw.write("\", \"text\" : \""); // { title : "windows phone", text : "
+                    //write links into the output file
+                    fw.write(link);
 
-               //text
-               String text = source.split(", \"text\": \"")[1];
-               text = text.split("\", \"link\":")[0];
+                    if(link_cnt != link_tmp.length) {
+                        // Because I split links by [[ ]] , use [[ as a delimiter in a json file
+                        fw.write("[[");
+                    }
+                }
 
-               fw.write(text);
-               fw.write("\", \"link\":\"[");
+                fw.write("\"}");
 
-               //to_link
-               //split using '[[' as a delimiter in the text (because link is formed as '[[LINK]]'
-               String[] link_tmp = text.split("\\[\\["); 
+                //There is no split delimiter ',' at the end of the data
+                article_cnt ++;
+                if(article_cnt != results.size()){
+                    fw.write(",");
+                }
+            }
 
-               //find links in a article
-               int flag = 0;
-               int link_cnt = 1; // list_tmp.len = cnt(list) + 1
-               for (String ele : link_tmp) {
-                   // first element is a garbage value
-                   if (flag == 0) {
-                       flag = 1;
-                       continue;
-                   }
-                   link_cnt++;
-                   String link = ele.split("\\]\\]")[0];
+            fw.write("]}");
+            fw.close();
 
-                   fw.write(link);
-
-                   if(link_cnt != link_tmp.length) {
-                       // used "[[" as delimiter because I splited the links by "[[ ]]"
-                       fw.write("[[");  
-                   }
-
-               }
-               //the end of an artile
-               fw.write("]\"}");
-
-               if(hits_cnt != hits_list.length) {
-                   fw.write(",");
-               }
-           }
-
-           fw.write("]\"}");
-           fw.close();
-       } catch (IOException e) {
-           e.printStackTrace();
-       }
-   }
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+    }
 }
+
