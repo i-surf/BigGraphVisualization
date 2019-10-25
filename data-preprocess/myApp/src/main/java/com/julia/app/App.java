@@ -13,127 +13,154 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
 public class App{
-   public static void main(String[] args) {
-       //file output
-       File file = new File("./src/main/java/com/julia/app/output/enwiki1622_1.txt");
-       File file2 = new File("./src/main/java/com/julia/app/output/enwiki1622_2.txt");
+    public static void main(String[] args) {
 
-       FileWriter fw = null;
+        File dir = new File("./src/main/input");
+        File []fileList = dir.listFiles();
 
-       //JSON parser object to parse read file
-       JSONParser jsonParser = new JSONParser();
+        for(File f : fileList) {
 
-       try (FileReader reader = new FileReader("./src/main/java/com/julia/app/output/enwiki1622.txt"))
-       {
-           //Read JSON file
-           Object obj = jsonParser.parse(reader);
+            if(f.isFile()) {
+                String tempPath = f.getParent();
+                String tempFileName = f.getName();
+                System.out.println("Path : " + tempPath);
+                System.out.println("File name : " + tempFileName);
 
-           JSONObject shards = (JSONObject) obj;
-           JSONObject hits = (JSONObject) shards.get("hits");
-           JSONArray results = (JSONArray) hits.get("hits"); //value of key or inner hits
+                String tempFileNameExcludeExtension = tempFileName.replace(".txt", "");
+                System.out.println(tempFileNameExcludeExtension);
 
-           fw = new FileWriter(file);
-           fw.write("{\"result\":");
-           fw.write("[");
+                try (FileReader reader = new FileReader(tempPath + "/" + tempFileName)) {
 
-           int article_cnt = 0;
-           int check = 0; // check is 0 until opening a second file
+                    //file output
+                    File file = new File(tempPath + "/" + tempFileNameExcludeExtension + 1 + ".txt");
+                    File file2 = new File(tempPath + "/" + tempFileNameExcludeExtension + 2 + ".txt");
 
-           double bytes, kilobytes, megabytes;
+                    System.out.println();
+                    System.out.println(file);
+                    System.out.println(file2);
 
-           // operation per each article
-           for(int i=0; i<results.size(); i++){
-               JSONObject res = (JSONObject) results.get(i); // res = each article
-               JSONObject source = (JSONObject) res.get("_source"); // source = each source
-               source.toJSONString(); // change value form into jsonString
+                    FileWriter fw = null;
 
-               Object title = source.get("title");
-               Object text = source.get("text");
+                    //JSON parser object to parse read file
+                    JSONParser jsonParser = new JSONParser();
 
-               System.out.println("title : " + title);
+                    //Read JSON file
+                    Object obj = jsonParser.parse(reader);
 
-               //write title and link into the output file
-               fw.write("{");
-               fw.write("\"title\":\"");
-               fw.write(title.toString());
-               fw.write("\",\"text\":\"");
-               fw.write(text.toString());
-               fw.write("\",\"link\":\"");
+                    JSONObject shards = (JSONObject) obj;
+                    JSONObject hits = (JSONObject) shards.get("hits");
+                    JSONArray results = (JSONArray) hits.get("hits"); //value of key or inner hits
 
-               //to_link
-               //split using '[[' as a delimiter in the text (because link is formed as '[[LINK]]'
-               String str = text.toString();
-               String[] link_tmp = str.split("\\[\\[");
+                    fw = new FileWriter(file);
+                    fw.write("{\"result\":");
+                    fw.write("[");
 
-               //find links in a article
-               int flag = 0;
-               int link_cnt = 1; // list_tmp.len = cnt(list) + 1
-               for (String ele : link_tmp) {
-                   // first element is a garbage value
-                   if (flag == 0) {
-                       flag = 1;
-                       continue;
-                   }
-                   link_cnt++;
-                   String link = ele.split("\\]\\]")[0];
+                    int article_cnt = 0;
+                    int check = 0; // check is 0 until opening a second file
 
-                   //write links into the output file
-                   fw.write(link);
+                    double bytes, kilobytes, megabytes;
 
-                   if(link_cnt != link_tmp.length) {
-                       // Because I split links by [[ ]] , use [[ as a delimiter in a json file
-                       fw.write("[[");
-                   }
-               }
+                    // operation per each article
+                    for (int i = 0; i < results.size(); i++) {
+                        JSONObject res = (JSONObject) results.get(i); // res = each article
+                        JSONObject source = (JSONObject) res.get("_source"); // source = each source
+                        source.toJSONString(); // change value form into jsonString
 
-               fw.write("\"}");
+                        Object title = source.get("title");
+                        Object text = source.get("text");
 
-               //split into two files because of limit of indexing size
-               bytes = file.length();
-               kilobytes = (bytes / 1024);
-               megabytes = (kilobytes / 1024);
+                        //write title and link into the output file
+                        fw.write("{");
+                        fw.write("\"title\":\"");
+                        fw.write(title.toString());
+                        fw.write("\",\"text\":\"");
+                        fw.write(text.toString());
+                        fw.write("\",\"link\":\"");
 
-               if(megabytes>120 && check==0){
+                        //to_link
+                        //split using '[[' as a delimiter in the text (because link is formed as '[[LINK]]'
+                        String str = text.toString();
+                        String[] link_tmp = str.split("\\[\\[");
 
-                   System.out.println();
+                        //find links in a article
+                        int flag = 0;
+                        int link_cnt = 1; // list_tmp.len = cnt(list) + 1
 
-                   fw.write("]}");
+                        if(link_tmp.length==1 || link_tmp.length==0){
+                            System.out.println(link_tmp.length);
 
-                   System.out.println("data size so far is");
-                   System.out.println(megabytes);
-                   System.out.println(", and a second output file is open.");
+                        }
 
-                   check = 1;
-                   fw.close();
+                        for (String ele : link_tmp) {
+                            // first element is a garbage value
+                            if (flag == 0) {
+                                flag = 1;
+                                continue;
+                            }
+                            link_cnt++;
+                            String link = ele.split("\\]\\]")[0];
 
-                   //start writing a second file
-                   fw = new FileWriter(file2);
-                   fw.write("{\"result\":");
-                   fw.write("[");
+                            //write links into the output file
+                            fw.write(link);
 
-                   //',' can not be added if a output file1 ends
-                   //just count a current article and continue;
-                   article_cnt++;
-                   continue;
+                            if (link_cnt != link_tmp.length) {
+                                // Because I split links by [[ ]] , use [[ as a delimiter in a json file
+                                fw.write("[[");
+                            }
+                        }
 
-               }
+                        fw.write("\"}");
 
-               //There is no split delimiter ',' at the end of the data
-               article_cnt ++;
-               if(article_cnt != results.size()){
-                   fw.write(",");
-               }
-           }
+                        //split into two files because of limit of indexing size
+                        bytes = file.length();
+                        kilobytes = (bytes / 1024);
+                        megabytes = (kilobytes / 1024); //////
 
-           fw.write("]}");
-           fw.close();
+                        if (megabytes > 4 && check == 0) { /////
 
-       } catch (FileNotFoundException e) {
-           e.printStackTrace();
-       } catch (IOException e) {
-           e.printStackTrace();
-       } catch (ParseException e) {
-           e.printStackTrace();
-       }
-   }
+                            System.out.println();
+
+                            fw.write("]}");
+
+                            System.out.println("이제까지 데이터의 크기는");
+                            System.out.println(megabytes); /////
+                            System.out.println("새 파일이 열립니다.");
+
+                            check = 1;
+                            fw.close();
+
+                            //start writing a second file
+                            fw = new FileWriter(file2);
+                            fw.write("{\"result\":");
+                            fw.write("[");
+
+                            //',' can not be added if a output file1 ends
+                            //just count a current article and continue;
+                            article_cnt++;
+                            continue;
+
+                        }
+
+                        //There is no split delimiter ',' at the end of the data
+                        article_cnt++;
+                        if (article_cnt != results.size()) {
+                            fw.write(",");
+                        }
+                    }
+
+                    fw.write("]}");
+                    fw.close();
+
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
+
+            }
+
+        }
+    }
 }
