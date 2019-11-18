@@ -13,119 +13,113 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
 public class App{
-    public static void main(String[] args) {
+   public static void main(String[] args) {
 
-        File dir = new File("./src/main/input");
-        File []fileList = dir.listFiles();
+       File dir = new File("./src/main/java/com/julia/app/input");
+       File []fileList = dir.listFiles();
 
-        for(File f : fileList) {
+       for(File f : fileList) {
 
-            if(f.isFile()) {
-                String path = f.getParent();
-                String fileName = f.getName();
-                System.out.println();
-                System.out.println("Path : " + path);
-                System.out.println("File name : " + fileName);
-                String outputPath = path.replace("input", "input/");
+           if(f.isFile()) {
+               String path = f.getParent();
+               String fileName = f.getName();
+               System.out.println();
+               System.out.println("Path : " + path);
+               System.out.println("File name : " + fileName);
 
-                String fileNameExcludeExtension = fileName.replace(".txt", "");
-                System.out.println(fileNameExcludeExtension);
+               String outputPath = path.replace("input", "input_2/");
 
-                try (FileReader reader = new FileReader(path + "/" + fileName)) {
+               String line;
+               ArrayList<String> lines = new ArrayList<String>();
 
-                    //file output
-                    File file = new File(outputPath + fileNameExcludeExtension + "_1" + ".txt");
-                    File file2 = new File(outputPath + fileNameExcludeExtension + "_2" + ".txt");
+               BufferedReader br = null;
+               FileWriter fw = null;
+               BufferedWriter bw = null;
+              
+               try (FileReader fr = new FileReader(path + "/" + fileName)) {
 
-                    System.out.println();
-                    System.out.println(file);
-                    System.out.println(file2);
+                   br = new BufferedReader(fr);
 
-                    FileWriter fw = null;
+                   File file = new File(outputPath + fileName);
+                   fw =  new FileWriter(file);
+                   bw = new BufferedWriter(fw);
 
-                     //JSON parser object to parse read file
-                    JSONParser jsonParser = new JSONParser();
+                   int cnt = 0;
+                   while ((line = br.readLine()) != null) {
+                       cnt++;
+                       System.out.println(cnt);
+                       //System.out.println(line);
+                      
+                       //일단 \를 제외한다. (오류나서)
+                      
+                       line = line.replaceAll("\t", "");
 
-                     //Read JSON file
-                    Object obj = jsonParser.parse(reader);
+                       line = line.replaceAll("\u008A", "");
+                       line = line.replaceAll("\u009A", "");
 
-                    JSONObject shards = (JSONObject) obj;
-                    System.out.println();
-                    System.out.println(shards);
+                       line = line.replaceAll("\u008B", "");
+                       line = line.replaceAll("\u009B", "");
 
-                    JSONArray results = (JSONArray) shards.get("result");
-                    System.out.println(results);
+                       line = line.replaceAll("\f", "");
+                       line = line.replaceAll("\u008C", "");
+                       line = line.replaceAll("\u009C", "");
 
-                    fw = new FileWriter(file);
-                    fw.write("{\"result\":");
-                    fw.write("[");
+                       line = line.replaceAll("\u008D", "");
+                       line = line.replaceAll("\u009D", "");
 
+                       line = line.replaceAll("\u008E", "");
+                       line = line.replaceAll("\u009E", "");
 
-                    int article_cnt = 0;
-                    int check = 0;
+                       line = line.replaceAll("\b", "");
 
-                    double bytes, kilobytes, megabytes;
+                       line = line.replaceAll("\u0080", "");
+                       line = line.replaceAll("\u0081", "");
+                       line = line.replaceAll("\u0082", "");
+                       line = line.replaceAll("\u0083", "");
+                       line = line.replaceAll("\u0084", "");
+                       line = line.replaceAll("\u0085", "");
+                       line = line.replaceAll("\u0086", "");
+                       line = line.replaceAll("\u0087", "");
+                       line = line.replaceAll("\u0088", "");
+                       line = line.replaceAll("\u0089", "");
 
-                    // operation per each article
-                    for (int i = 0; i < results.size(); i++) {
-                        JSONObject res = (JSONObject) results.get(i); //각 기사
-                        System.out.println(res);
+                       line = line.replaceAll("\u0090", "");
+                       line = line.replaceAll("\u0091", "");
+                       line = line.replaceAll("\u0092", "");
+                       line = line.replaceAll("\u0093", "");
+                       line = line.replaceAll("\u0094", "");
+                       line = line.replaceAll("\u0095", "");
+                       line = line.replaceAll("\u0096", "");
+                       line = line.replaceAll("\u0097", "");
+                       line = line.replaceAll("\u0098", "");
+                       line = line.replaceAll("\u0099", "");
 
-                        Object title = res.get("title");
-                        Object text = res.get("text");
-                        Object link = res.get("link");
- 
-                        //write title and link into first output file
-                        fw.write("{");
-                        fw.write("\"title\":\"");
-                        fw.write(title.toString());
-                        fw.write("\",\"text\":\"");
-                        fw.write(text.toString());
-                        fw.write("\",\"link\":\"");
+                       line = line.replaceAll("\u008F", "");
+                       line = line.replaceAll("\u009F", "");
 
-                        fw.write(link.toString());
-                        fw.write("\"}");
+                       bw.write(line);
+                       bw.flush();
+                   }
 
-                        //get file size so far
-                        bytes = file.length();
-                        kilobytes = (bytes / 1024);
-                        megabytes = (kilobytes / 1024);
+               } catch (FileNotFoundException e) {
+                   e.printStackTrace();
+               } catch (IOException e) {
+                   e.printStackTrace();
+               }
 
-                        //if first file size exceeds a standard, second file is open
-                        if (megabytes > 70 && check == 0) { 
-                            fw.write("]}");
-
-                            System.out.println("first file's datasize so far is");
-                            System.out.println(megabytes);
-                            System.out.println("a second file is open");
-
-                            check = 1;
-                            fw.close();
-
-                            fw = new FileWriter(file2);
-                            fw.write("{\"result\":");
-                            fw.write("[");
-
-                            article_cnt++;
-                            continue;
-                        }
-
-                        article_cnt++;
-                        if (article_cnt != results.size()) {
-                            fw.write(",");
-                        }
-                    }
-                    fw.write("]}");
-                    fw.close();
-
-                } catch (FileNotFoundException e) {
-                    e.printStackTrace();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                } catch (ParseException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-    }
+               finally {
+                   try {
+                       if (br != null)
+                           br.close();
+                   } catch (IOException e) {
+                   }
+                   try {
+                       if (bw != null)
+                           bw.close();
+                   } catch (IOException e) {
+                   }
+               }
+           }
+       }
+   }
 }
