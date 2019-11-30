@@ -1,5 +1,3 @@
-package com.julia.app;
-
 import java.util.*;
 import java.io.*;
 import java.io.File;
@@ -12,114 +10,73 @@ import org.json.simple.JSONArray;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
-public class App{
-   public static void main(String[] args) {
+public class App {
+    public static void main(String[] args) {
 
-       File dir = new File("./src/main/java/com/julia/app/input");
-       File []fileList = dir.listFiles();
+        File dir = new File("./src/main/java/com/julia/app/lastInput");
+        File[] fileList = dir.listFiles();
+        int cnt = 0;
 
-       for(File f : fileList) {
+        for (File f : fileList) {
+            if (f.isFile()) {
+                cnt++;
+                String tempPath = f.getParent();
+                String tempFileName = f.getName();
+                System.out.println("Path : " + tempPath);
+                System.out.println("File name : " + tempFileName);
 
-           if(f.isFile()) {
-               String path = f.getParent();
-               String fileName = f.getName();
-               System.out.println();
-               System.out.println("Path : " + path);
-               System.out.println("File name : " + fileName);
+                String tempFileNameExcludeExtension = tempFileName.replace(".txt", "");
+                System.out.println(tempFileNameExcludeExtension);
 
-               String outputPath = path.replace("input", "input_2/");
+                try (FileReader reader = new FileReader(tempPath + "/" + tempFileName)) {
 
-               String line;
-               ArrayList<String> lines = new ArrayList<String>();
+                    JSONParser jsonParser = new JSONParser();
 
-               BufferedReader br = null;
-               FileWriter fw = null;
-               BufferedWriter bw = null;
-              
-               try (FileReader fr = new FileReader(path + "/" + fileName)) {
+                    //Read JSON file
+                    Object obj = jsonParser.parse(reader);
+                    JSONObject shards = (JSONObject) obj;
+                    JSONObject hits = (JSONObject) shards.get("hits");
+                    JSONArray hits2 = (JSONArray) hits.get("hits");
+                    JSONObject hits2_arrayToJson = (JSONObject) hits2.get(0); //value of key or inner hits
+                    JSONObject source = (JSONObject) hits2_arrayToJson.get("_source"); //value of key or inner hits
+                    JSONArray result = (JSONArray) source.get("result");
 
-                   br = new BufferedReader(fr);
+                    int id = 1;
 
-                   File file = new File(outputPath + fileName);
-                   fw =  new FileWriter(file);
-                   bw = new BufferedWriter(fw);
+                    for(int i=0; i<result.size(); i++){
+                        JSONObject res = (JSONObject) result.get(i); // res = each article
+                        res.toJSONString(); // change value form into jsonString
 
-                   int cnt = 0;
-                   while ((line = br.readLine()) != null) {
-                       cnt++;
-                       System.out.println(cnt);
-                       //System.out.println(line);
-                      
-                       //일단 \를 제외한다. (오류나서)
-                      
-                       line = line.replaceAll("\t", "");
+                        Object title = res.get("title");
+                        Object text = res.get("text");
+                        Object link = res.get("link");
 
-                       line = line.replaceAll("\u008A", "");
-                       line = line.replaceAll("\u009A", "");
+                        File file = new File("./src/main/java/com/julia/app/"+cnt+"/"+tempFileNameExcludeExtension+"_id"+id+".txt");
+                        FileWriter fw = new FileWriter(file);
 
-                       line = line.replaceAll("\u008B", "");
-                       line = line.replaceAll("\u009B", "");
+                        System.out.println("file cnt : " + cnt);
 
-                       line = line.replaceAll("\f", "");
-                       line = line.replaceAll("\u008C", "");
-                       line = line.replaceAll("\u009C", "");
+                        fw.write("{");
+                        fw.write("\"title\":\"");
+                        fw.write(title.toString());
+                        fw.write("\",\"text\":\"");
+                        fw.write(text.toString());
+                        fw.write("\",\"link\":\"");
+                        fw.write(link.toString());
+                        fw.write("\"}");
 
-                       line = line.replaceAll("\u008D", "");
-                       line = line.replaceAll("\u009D", "");
+                        fw.close();
+                        id++;
+                    }
 
-                       line = line.replaceAll("\u008E", "");
-                       line = line.replaceAll("\u009E", "");
-
-                       line = line.replaceAll("\b", "");
-
-                       line = line.replaceAll("\u0080", "");
-                       line = line.replaceAll("\u0081", "");
-                       line = line.replaceAll("\u0082", "");
-                       line = line.replaceAll("\u0083", "");
-                       line = line.replaceAll("\u0084", "");
-                       line = line.replaceAll("\u0085", "");
-                       line = line.replaceAll("\u0086", "");
-                       line = line.replaceAll("\u0087", "");
-                       line = line.replaceAll("\u0088", "");
-                       line = line.replaceAll("\u0089", "");
-
-                       line = line.replaceAll("\u0090", "");
-                       line = line.replaceAll("\u0091", "");
-                       line = line.replaceAll("\u0092", "");
-                       line = line.replaceAll("\u0093", "");
-                       line = line.replaceAll("\u0094", "");
-                       line = line.replaceAll("\u0095", "");
-                       line = line.replaceAll("\u0096", "");
-                       line = line.replaceAll("\u0097", "");
-                       line = line.replaceAll("\u0098", "");
-                       line = line.replaceAll("\u0099", "");
-
-                       line = line.replaceAll("\u008F", "");
-                       line = line.replaceAll("\u009F", "");
-
-                       bw.write(line);
-                       bw.flush();
-                   }
-
-               } catch (FileNotFoundException e) {
-                   e.printStackTrace();
-               } catch (IOException e) {
-                   e.printStackTrace();
-               }
-
-               finally {
-                   try {
-                       if (br != null)
-                           br.close();
-                   } catch (IOException e) {
-                   }
-                   try {
-                       if (bw != null)
-                           bw.close();
-                   } catch (IOException e) {
-                   }
-               }
-           }
-       }
-   }
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
 }
