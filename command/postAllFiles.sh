@@ -1,10 +1,15 @@
 #!/bin/bash
 
-for f in *.txt;
+for num in index*;
 do
-        (( cnt = "${cnt}" + 1 ))
-        # echo "${cnt}" "${f}" 
 
-        curl -XPOST "localhost:9200/test2/page/${f}?pretty" -H 'Content-Type: application/json' -d @$f;
+	echo "${num}"
+
+	for f in .\/${num}\/*.txt;
+	do
+		echo "${f}"
+        (( cnt = "${cnt}" + 1 ))
+        curl -XPOST "localhost:9200/${num}/page/${cnt}?pretty" -H 'Content-Type: application/json' -d @$f;
+	done
 
 done
