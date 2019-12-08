@@ -1,9 +1,9 @@
-from http.server import BaseHTTPRequestHandler, HTTPServer
+from http.server import BaseHTTPRequestHandler, HTTPServer  
 from urllib.parse import parse_qs
 import urllib.request
 import json
 
-class S(BaseHTTPRequestHandler):
+class S(BaseHTTPRequestHandler): 
     def _set_headers(self):
         self.send_response(200)
         self.send_header('Content-type', 'application/json')
@@ -30,8 +30,19 @@ def run(server_class=HTTPServer, handler_class=S, port=8080):
 def searchDB(keyword):
     url = 'http://localhost:9200/_all/_search?q=text:' + str(keyword)
     f = urllib.request.urlopen(url)
-    data = json.loads(f.read().decode('utf-8'))
-    return data
+    data = json.loads(f.read().decode('utf-8'))["hits"]["hits"]
+    # print(data)
+
+    # extract title and link from each document in data
+    res = [] 
+    for i in range(len(data)): # run every inner hits
+        node = {}
+        node["title"] = data[i]["_source"]["title"]
+        node["link"] = data[i]["_source"]["link"]
+        res.append(node)
+
+    print(res)
+    return res
 
 if __name__ == "__main__":
     from sys import argv
